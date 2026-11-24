@@ -1,0 +1,60 @@
+/* A barra fica sobre o canvas, com cores próprias para cada cena e sem filtros de GPU. */
+body {
+  --barra-fundo: #fff8f0; --barra-campo: #f3e9df; --barra-tinta: #3b2a2a;
+  --barra-suave: #806c62; --barra-acento: #d9643a; --barra-linha: #dfcec0;
+}
+body.colmeia {
+  --barra-fundo: #211b38; --barra-campo: #17142b; --barra-tinta: #f1ebff;
+  --barra-suave: #b4a8ce; --barra-acento: #8b70d8; --barra-linha: #443759;
+}
+#painel {
+  position: fixed; left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right));
+  bottom: max(16px, env(safe-area-inset-bottom)); width: auto; max-width: 620px; margin: 0 auto;
+  padding: 10px; border: 1px solid var(--barra-linha); border-radius: 24px;
+  background: var(--barra-fundo); color: var(--barra-tinta); box-shadow: 0 8px 32px #0003;
+  font-size: 12px; transition: opacity .3s;
+}
+#painel .entrada { display: flex; align-items: center; gap: 8px; }
+#prompt {
+  flex: 1; min-width: 0; width: 100%; border: 1px solid transparent; border-radius: 16px;
+  padding: 12px 14px; background: var(--barra-campo); color: inherit; font: inherit; font-size: 15px;
+  user-select: text; -webkit-user-select: text;
+}
+#prompt::placeholder { color: var(--barra-suave); opacity: 1; }
+#painel button {
+  display: inline-flex; align-items: center; justify-content: center; flex: none; cursor: pointer;
+  border: 0; border-radius: 12px; height: 32px; min-width: 32px; padding: 0 8px;
+  background: transparent; color: inherit; font: inherit; font-size: 20px;
+}
+#painel button:hover { background: var(--barra-campo); }
+#painel button:active { transform: scale(.94); }
+#painel #enviar { width: 44px; height: 44px; background: var(--barra-acento); color: #fff; }
+#enviar svg { width: 20px; height: 20px; }
+#painel :focus-visible { outline: 2px solid var(--barra-acento); outline-offset: 2px; }
+#painel .controles { display: flex; align-items: center; gap: 4px; margin-top: 6px; color: var(--barra-suave); }
+#painel .n { min-width: 18px; text-align: center; font-variant-numeric: tabular-nums; }
+#painel .t { margin-left: auto; padding: 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#painel .t b { font-weight: 500; }
+#painel .t small { margin-left: 8px; font-size: 11px; opacity: .8; }
+#painel.gravando { opacity: 0; pointer-events: none; visibility: hidden; }
+#modo {
+  position: fixed; right: max(16px, env(safe-area-inset-right)); top: max(16px, env(safe-area-inset-top));
+  display: flex; align-items: center; gap: 7px; padding: 6px 11px; border-radius: 999px;
+  background: var(--barra-fundo); color: var(--barra-tinta); box-shadow: 0 2px 10px #0002; font-size: 11.5px;
+}
+#modo i { width: 7px; height: 7px; border-radius: 50%; background: var(--barra-acento); }
+#modo.real i { background: var(--verde); }
+#modo.gravando { opacity: 0; }
+@media (max-width: 640px) {
+  #painel { bottom: max(10px, env(safe-area-inset-bottom)); padding: 8px; }
+  #prompt { font-size: 16px; padding: 12px; }
+  #painel .controles { margin-top: 2px; }
+  #painel .controles button { min-width: 44px; height: 44px; }
+  #painel .t small { display: none; }
+}
+/* A navegação não altera o conteúdo do selo usado pelos controladores existentes. */
+#paginas { position: fixed; left: max(16px, env(safe-area-inset-left)); top: max(16px, env(safe-area-inset-top));
+  display: flex; gap: 12px; font-size: 11px; color: var(--barra-suave); }
+#paginas a { color: inherit; text-decoration: none; padding: 6px 0; }
+#paginas a:hover, #paginas a[aria-current="page"] { color: var(--barra-acento); }
+#paginas a:focus-visible { outline: 2px solid var(--barra-acento); outline-offset: 3px; border-radius: 3px; }

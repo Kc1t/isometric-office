@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Escritório dos agentes</title>
+<link rel="icon" href="data:,">
+<style>
+  :root { --tinta: #3b2a2a; --papel: rgba(255, 248, 240, .94); --terracota: #d9643a; --verde: #3f9d5e; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #e7d3dc; color: var(--tinta);
+    font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif; -webkit-font-smoothing: antialiased; user-select: none; -webkit-user-select: none; }
+  canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; }
+  canvas#c.arrasta { cursor: grabbing; }
+  #camada { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+
+  /* etiquetas e balões presos aos robôs */
+  .etq { position: absolute; left: 0; top: 0; transform: translate(-50%, -100%); white-space: nowrap; will-change: transform;
+    background: var(--papel);
+    border-radius: 999px; padding: 3px 10px 3px 8px; font-size: 12px; line-height: 16px; font-weight: 500;
+    box-shadow: 0 1px 6px rgba(70, 30, 20, .16); display: flex; align-items: center; gap: 6px; opacity: 0; transition: opacity .35s; }
+  .etq.on { opacity: 1; }
+  .etq i { width: 7px; height: 7px; border-radius: 50%; background: var(--terracota); flex: none; transition: background .3s; }
+  .etq b { font-weight: 650; }
+  .etq u { max-width: min(300px, 60vw); overflow: hidden; text-overflow: ellipsis; }
+  .etq span { opacity: .62; font-variant-numeric: tabular-nums; }
+  .etq.sub { font-size: 10.5px; padding: 2px 8px 2px 6px; line-height: 14px; }
+  .etq[data-e="pensando"] i { background: #b98a2e; }
+  .etq[data-e="esperando"] i { background: #c2478a; animation: pisca 1s ease-in-out infinite; }
+  .etq[data-e="ocioso"] i { background: #a39a92; }
+  .etq[data-e="terminou"] i { background: var(--verde); }
+  @keyframes pisca { 50% { opacity: .25; } }
+
+  .balao { position: absolute; left: 0; top: 0; will-change: transform; opacity: 0; transition: opacity .25s; }
+  .balao.on { opacity: 1; }
+  .balao > div { transform: translate(-50%, -100%) scale(.4); transform-origin: 50% 100%; transition: transform .35s cubic-bezier(.3, 1.7, .5, 1);
+    min-width: 34px; height: 30px; padding: 0 9px; border-radius: 15px; background: #fffaf4; box-shadow: 0 2px 8px rgba(70, 30, 20, .2);
+    display: flex; align-items: center; justify-content: center; gap: 4px; font-weight: 700; font-size: 18px; color: var(--tinta); position: relative; }
+  .balao.on > div { transform: translate(-50%, -100%) scale(1); }
+  .balao > div::after { content: ""; position: absolute; left: 50%; bottom: -5px; width: 10px; height: 10px; background: inherit; transform: translateX(-50%) rotate(45deg); border-radius: 2px; }
+  .balao em { width: 5px; height: 5px; border-radius: 50%; background: #8c7a70; animation: ponto 1.2s ease-in-out infinite; }
+  .balao em:nth-child(2) { animation-delay: .18s; } .balao em:nth-child(3) { animation-delay: .36s; }
+  @keyframes ponto { 0%, 60%, 100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-4px); opacity: 1; } }
+  .balao.q > div { color: #c2478a; animation: chama 1.6s ease-in-out infinite; }
+  @keyframes chama { 50% { margin-top: -4px; } }
+  .balao.ok > div { background: var(--verde); }
+  .balao.ok svg { width: 17px; height: 17px; display: block; position: relative; z-index: 1; }
+  .balao.sub > div { min-width: 26px; height: 23px; font-size: 14px; }
+
+  #aviso { position: fixed; left: 50%; top: 22px; transform: translate(-50%, -80px); background: #3b2a2a; color: #fff6ec; font-size: 13px; padding: 9px 16px; border-radius: 12px;
+    transition: transform .5s cubic-bezier(.3, 1.4, .5, 1); max-width: calc(100vw - 32px); text-align: center; }
+  #aviso.on { transform: translate(-50%, 0); }
+  #carga { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #e7d3dc; transition: opacity .6s; font-size: 13px; letter-spacing: .08em; color: #7d6068; }
+  #carga.fora { opacity: 0; pointer-events: none; }
+  @media (max-width: 640px) {
+    .etq { font-size: 10px; padding: 2px 7px 2px 5px; } .etq span { display: none; }
+  }
+</style>
+<link rel="stylesheet" href="./css/prompt.css">
+<script type="importmap">
+{ "imports": { "three": "./vendor/three/build/three.module.js", "three/addons/": "./vendor/three/examples/jsm/" } }
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="camada"></div>
+<form id="painel" aria-label="Criar e gerenciar agentes">
+  <div class="entrada">
+    <input id="prompt" type="text" aria-label="Tarefa do novo agente" placeholder="Qual é a próxima tarefa?" autocomplete="off" enterkeyhint="send" title="Digite uma tarefa ou use /sub, /sair e /limpar. / foca a barra; Esc sai.">
+    <button id="enviar" type="submit" aria-label="Enviar tarefa" title="Enviar tarefa">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
+    </button>
+  </div>
+  <div class="controles">
+    <button id="menos" type="button" aria-label="Remover agente" title="Remover agente">−</button>
+    <output class="n" id="conta" aria-label="Quantidade de agentes">0</output>
+    <button id="mais" type="button" aria-label="Adicionar agente" title="Adicionar agente">+</button>
+    <div class="t"><b>Escritório dos agentes</b><small id="estagio">quarto</small></div>
+  </div>
+</form>
+<nav id="paginas" aria-label="Cenas"><a href="./index.html" aria-current="page">Escritório</a><a href="./hive.html">Colmeia</a><a href="./pipeline.html">Pipeline</a></nav>
+<div id="modo"><i></i><span>demo</span></div>
+<div id="aviso" role="status"></div>
+<div id="carga">montando o escritório…</div>
+<script type="module" src="./js/main.js"></script>
+</body>
+</html>

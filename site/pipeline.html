@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pipeline dos agentes</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="./css/prompt.css">
+<link rel="stylesheet" href="./css/pipeline.css">
+<script type="importmap">
+{ "imports": { "three": "./vendor/three/build/three.module.js", "three/addons/": "./vendor/three/examples/jsm/" } }
+</script>
+</head>
+<body class="colmeia pipeline">
+<canvas id="c" aria-label="Cinco times de agentes ligados por uma esteira isométrica"></canvas>
+<div id="camada"></div>
+<header id="titulo"><span>DA IDEIA À ENTREGA</span><h1>Um trabalho. <br>Cinco times.</h1><p>Agentes em sintonia, uma etapa de cada vez.</p></header>
+<form id="painel" aria-label="Criar tarefas na pipeline">
+  <div class="entrada">
+    <input id="prompt" type="text" maxlength="180" aria-label="Tarefa para a pipeline" placeholder="O que vamos construir?" autocomplete="off" enterkeyhint="send" title="Digite uma tarefa. Comandos: /time código +, /time código -, /limpar e /auto.">
+    <button id="enviar" type="submit" aria-label="Enviar tarefa" title="Enviar tarefa">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
+    </button>
+  </div>
+  <div class="controles">
+    <button id="menos" type="button" aria-label="Remover última tarefa da fila" title="Remover última tarefa da fila">−</button>
+    <output class="n" id="conta" aria-label="Quantidade de tarefas na pipeline">0</output>
+    <button id="mais" type="button" aria-label="Criar tarefa de exemplo" title="Criar tarefa de exemplo">+</button>
+    <div class="t"><b>Pipeline dos agentes</b><small id="estagio">0 entregues</small></div>
+  </div>
+</form>
+<nav id="paginas" aria-label="Cenas"><a href="./index.html">Escritório</a><a href="./hive.html">Colmeia</a><a href="./pipeline.html" aria-current="page">Pipeline</a></nav>
+<div id="modo"><i></i><span>demo · pipeline</span></div>
+<div id="aviso" role="status"></div>
+<div id="carga" role="status">montando a pipeline…</div>
+<script type="module" src="./js/pipeline.js"></script>
+</body>
+</html>

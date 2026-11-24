@@ -1,0 +1,28 @@
+<!doctype html><meta charset="utf-8"><title>GLBs</title><style>html,body{margin:0;background:#ddd}canvas{display:block}</style>
+<script type="importmap">{ "imports": { "three": "./vendor/three/build/three.module.js", "three/addons/": "./vendor/three/examples/jsm/" } }</script>
+<canvas id="c"></canvas>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+const r = new THREE.WebGLRenderer({ canvas: c, antialias: true }); r.setSize(innerWidth, innerHeight);
+const s = new THREE.Scene(); s.background = new THREE.Color(0xdddddd);
+s.environment = new THREE.PMREMGenerator(r).fromScene(new RoomEnvironment(), .04).texture;
+const cam = new THREE.OrthographicCamera(-4.2 * innerWidth / innerHeight, 4.2 * innerWidth / innerHeight, 4.2, -4.2, .1, 100);
+cam.position.set(10, 9, 14); cam.lookAt(0, 0, 0);
+const nomes = ['cadeira', 'mesa', 'torre', 'planta', 'pendente', 'caixa-som', 'sofa', 'cafe', 'teclado', 'estante'];
+const L = new GLTFLoader(); L.setMeshoptDecoder(MeshoptDecoder);
+const info = {};
+await Promise.all(nomes.map(async (n, i) => {
+  const g = (await L.loadAsync('./assets/glb/' + n + '.glb')).scene;
+  const b = new THREE.Box3().setFromObject(g), sz = b.getSize(new THREE.Vector3());
+  let tris = 0; g.traverse(m => { if (m.isMesh) { tris += (m.geometry.index ? m.geometry.index.count : m.geometry.attributes.position.count) / 3; info[n] = { rug: m.material.roughness, met: m.material.metalness, mm: !!m.material.metalnessMap, nm: !!m.material.normalMap }; } });
+  info[n].tam = sz.toArray().map(v => +v.toFixed(3)); info[n].min = b.min.toArray().map(v => +v.toFixed(3)); info[n].tris = tris;
+  const h = new THREE.Group(); h.add(g); g.scale.setScalar(2 / Math.max(sz.x, sz.y, sz.z));
+  h.position.set((i % 5 - 2) * 3.4, 0, (Math.floor(i / 5) - .5) * 5); s.add(h);
+  h.add(new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, -1.1, 0), 1.5, 0xff0000, .3, .2));
+  h.add(new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, -1.1, 0), 1.5, 0x0000ff, .3, .2));
+}));
+r.render(s, cam); window.info = info; window.pronto = true;
+</script>
